@@ -1,6 +1,7 @@
 package jkml.cli;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,19 +10,11 @@ import java.nio.file.Files;
 
 import org.junit.jupiter.api.Test;
 
-class CommandParserTests {
-
-	private static String[] args(String str) {
-		return str.split("\\s+");
-	}
-
-	private Object parseCommand(String commandLine) {
-		return CommandParser.parseCommand(args(commandLine));
-	}
+class CommandProcessorTests {
 
 	@Test
 	void testRun_invalidArgs() {
-		assertEquals(CommandParser.FAILURE, CommandParser.run(""));
+		assertEquals(CommandProcessor.FAILURE, CommandProcessor.run(""));
 	}
 
 	@Test
@@ -33,8 +26,8 @@ class CommandParserTests {
 		Files.deleteIfExists(target);
 		Files.createFile(source);
 
-		assertEquals(CommandParser.SUCCESS,
-				CommandParser.run("copy", "-s", source.toString(), "-t", target.toString()));
+		assertEquals(CommandProcessor.SUCCESS,
+				CommandProcessor.run("copy", "-s", source.toString(), "-t", target.toString()));
 		assertTrue(Files.exists(source));
 		assertTrue(Files.exists(target));
 	}
@@ -48,8 +41,8 @@ class CommandParserTests {
 		Files.deleteIfExists(target);
 		Files.createFile(source);
 
-		assertEquals(CommandParser.SUCCESS,
-				CommandParser.run("move", "-s", source.toString(), "-t", target.toString()));
+		assertEquals(CommandProcessor.SUCCESS,
+				CommandProcessor.run("move", "-s", source.toString(), "-t", target.toString()));
 		assertTrue(Files.notExists(source));
 		assertTrue(Files.exists(target));
 	}
@@ -62,22 +55,28 @@ class CommandParserTests {
 		Files.deleteIfExists(source);
 		Files.deleteIfExists(target);
 
-		assertEquals(CommandParser.FAILURE,
-				CommandParser.run("move", "-s", source.toString(), "-t", target.toString()));
+		assertEquals(CommandProcessor.FAILURE,
+				CommandProcessor.run("move", "-s", source.toString(), "-t", target.toString()));
 	}
 
 	@Test
-	void testParseCommand() {
-		assertNull(CommandParser.parseCommand());
-		assertNull(CommandParser.parseCommand(""));
-		assertNull(CommandParser.parseCommand(" "));
-		assertNull(CommandParser.parseCommand("unknown a b"));
+	void testParseCommand_invalid() {
+		assertNull(CommandProcessor.parseCommand());
+		assertNull(CommandProcessor.parseCommand(""));
+		assertNull(CommandProcessor.parseCommand(" "));
+		assertNull(CommandProcessor.parseCommand("unknown"));
+	}
 
-		var cmd = parseCommand("copy -s a.txt -t b.txt");
-		assertTrue(cmd instanceof Commands.Copy);
+	@Test
+	void testParseCommand_copy() {
+		assertNull(CommandProcessor.parseCommand("copy", "-s", "a.txt"));
+		assertInstanceOf(Commands.Copy.class, CommandProcessor.parseCommand("copy", "-s", "a.txt", "-t", "b.txt"));
+	}
 
-		cmd = parseCommand("move -s a.txt -t b.txt");
-		assertTrue(cmd instanceof Commands.Move);
+	@Test
+	void testParseCommand_move() {
+		assertNull(CommandProcessor.parseCommand("move", "-t", "b.txt"));
+		assertInstanceOf(Commands.Move.class, CommandProcessor.parseCommand("move", "-s", "a.txt", "-t", "b.txt"));
 	}
 
 }

@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 
-public class Commands {
+class Commands {
 
 	private Commands() {
 	}
@@ -23,16 +23,8 @@ public class Commands {
 			return source;
 		}
 
-		public void setSource(Path source) {
-			this.source = source;
-		}
-
 		public Path getTarget() {
 			return target;
-		}
-
-		public void setTarget(Path target) {
-			this.target = target;
 		}
 
 	}
@@ -50,16 +42,8 @@ public class Commands {
 			return source;
 		}
 
-		public void setSource(Path source) {
-			this.source = source;
-		}
-
 		public Path getTarget() {
 			return target;
-		}
-
-		public void setTarget(Path target) {
-			this.target = target;
 		}
 
 	}
