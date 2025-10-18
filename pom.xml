@@ -21,7 +21,7 @@
 		<slf4j.version>2.0.17</slf4j.version>
 		<tinylog.version>2.7.0</tinylog.version>
 		<jcommander.version>3.0</jcommander.version>
-		<jacoco.version>0.8.13</jacoco.version>
+		<jacoco.version>0.8.14</jacoco.version>
 	</properties>
 
 	<dependencies>

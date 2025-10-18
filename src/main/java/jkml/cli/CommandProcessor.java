@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 
 public class CommandProcessor {
 
@@ -22,11 +23,14 @@ public class CommandProcessor {
 
 	static int run(String... args) {
 		try {
-			return executeCommand(parseCommand(args));
+			var cmd = parseCommand(args);
+			if (cmd != null) {
+				return executeCommand(cmd);
+			}
 		} catch (Exception e) {
 			logger.error("Exception occurred", e);
-			return FAILURE;
 		}
+		return FAILURE;
 	}
 
 	static Object parseCommand(String... args) {
@@ -34,19 +38,23 @@ public class CommandProcessor {
 				.addCommand(new Commands.Copy())
 				.addCommand(new Commands.Move())
 				.build();
-		try {
-			jc.parse(args);
-			return jc.getCommands().get(jc.getParsedCommand()).getObjects().get(0);
-		} catch (Exception e) {
+
+		if (args.length == 0) {
 			jc.usage();
 			return null;
 		}
+
+		try {
+			jc.parse(args);
+		} catch (ParameterException e) {
+			System.err.println("Invalid argument: " + e.getMessage());
+			return null;
+		}
+		return jc.getCommands().get(jc.getParsedCommand()).getObjects().get(0);
 	}
 
 	private static int executeCommand(Object command) throws IOException {
-		if (command == null) {
-			return FAILURE;
-		} else if (command instanceof Commands.Copy copy) {
+		if (command instanceof Commands.Copy copy) {
 			logger.info("Copying file from {} to {}", copy.getSource(), copy.getTarget());
 			Files.copy(copy.getSource(), copy.getTarget());
 		} else if (command instanceof Commands.Move move) {
