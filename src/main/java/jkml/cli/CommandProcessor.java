@@ -11,49 +11,52 @@ import com.beust.jcommander.ParameterException;
 
 public class CommandProcessor {
 
-	private static final Logger logger = LoggerFactory.getLogger(CommandProcessor.class);
-
 	static final int SUCCESS = 0;
 
 	static final int FAILURE = 1;
 
+	private static final Logger logger = LoggerFactory.getLogger(CommandProcessor.class);
+
 	public static void main(String[] args) {
-		System.exit(run(args));
+		System.exit(new CommandProcessor().run(args));
 	}
 
-	static int run(String... args) {
+	int run(String... args) {
 		try {
-			var cmd = parseCommand(args);
-			if (cmd != null) {
-				return executeCommand(cmd);
-			}
+			return doRun(args);
 		} catch (Exception e) {
 			logger.error("Exception occurred", e);
+			return FAILURE;
 		}
-		return FAILURE;
 	}
 
-	static Object parseCommand(String... args) {
+	private static String usage(JCommander jc) {
+		var sb = new StringBuilder();
+		jc.usage(sb);
+		return sb.toString();
+	}
+
+	private int doRun(String... args) throws IOException {
+		//@formatter:off
 		var jc = JCommander.newBuilder()
+				.programName(CommandProcessor.class.getName())
 				.addCommand(new Commands.Copy())
 				.addCommand(new Commands.Move())
 				.build();
-
-		if (args.length == 0) {
-			jc.usage();
-			return null;
-		}
+		//@formatter:on
 
 		try {
 			jc.parse(args);
 		} catch (ParameterException e) {
 			System.err.println("Invalid argument: " + e.getMessage());
-			return null;
+			return FAILURE;
 		}
-		return jc.getCommands().get(jc.getParsedCommand()).getObjects().get(0);
-	}
+		if (jc.getParsedCommand() == null) {
+			System.err.println(usage(jc));
+			return FAILURE;
+		}
 
-	private static int executeCommand(Object command) throws IOException {
+		var command = jc.getCommands().get(jc.getParsedCommand()).getObjects().get(0);
 		if (command instanceof Commands.Copy copy) {
 			logger.info("Copying file from {} to {}", copy.getSource(), copy.getTarget());
 			Files.copy(copy.getSource(), copy.getTarget());
@@ -63,6 +66,7 @@ public class CommandProcessor {
 		} else {
 			throw new IllegalArgumentException("Unsupported command: {}" + command.getClass().getName());
 		}
+
 		return SUCCESS;
 	}
 
