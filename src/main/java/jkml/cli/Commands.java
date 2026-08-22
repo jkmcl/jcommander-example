@@ -11,7 +11,7 @@ class Commands {
 	}
 
 	@Parameters(commandNames = "copy", commandDescription = "Copy a file to a target file. ")
-	public static class Copy {
+	static class Copy {
 
 		@Parameter(names = "-s", description = "Source", required = true)
 		private Path source;
@@ -30,7 +30,7 @@ class Commands {
 	}
 
 	@Parameters(commandNames = "move", commandDescription = "Move or rename a file to a target file.")
-	public static class Move {
+	static class Move {
 
 		@Parameter(names = "-s", description = "Source", required = true)
 		private Path source;
